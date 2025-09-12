@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21) // você está no JDK 21
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.hibernate.orm:hibernate-core:6.5.2.Final'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    runtimeOnly 'com.h2database:h2:2.3.232'
+}
+
+application {
+    mainClass = 'br.edu.ifpb.Main'
+}
+
