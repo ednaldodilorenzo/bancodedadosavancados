@@ -1,11 +1,9 @@
 package br.edu.ifpb;
 
 import br.edu.ifpb.dao.ClienteDao;
+import br.edu.ifpb.dao.CompraDao;
 import br.edu.ifpb.dao.ProdutoDao;
-import br.edu.ifpb.model.Cliente;
-import br.edu.ifpb.model.Compra;
-import br.edu.ifpb.model.ItemCompra;
-import br.edu.ifpb.model.Produto;
+import br.edu.ifpb.model.*;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -14,7 +12,6 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
-import java.math.BigDecimal;
 import java.util.Scanner;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -41,6 +38,7 @@ public class Main {
 
             ClienteDao clienteDao = new ClienteDao(mongoDatabase);
             ProdutoDao produtoDao = new ProdutoDao(mongoDatabase);
+            CompraDao compraDao = new CompraDao(mongoDatabase);
             int opcao = 0;
             do {
                 System.out.println("""
@@ -81,8 +79,8 @@ public class Main {
                             System.out.println("Cliente não encontrado!");
                             return;
                         }
-
-                        while(true) {
+                        Compra compra = new Compra();
+                        while (true) {
                             System.out.println("Digite o ID do produto (ou vazio para finalizar): ");
                             String idProduto = new Scanner(System.in).nextLine();
                             if (idProduto.isBlank()) {
@@ -95,12 +93,45 @@ public class Main {
                             }
                             System.out.println("Quantidade: ");
                             int quantidade = new Scanner(System.in).nextInt();
-                            Compra compra = new Compra();
+
                             compra.setCliente(cliente);
                             compra.addItem(new ItemCompra(produto, quantidade, produto.getValor()));
                         }
+                        if (compra.getItens().isEmpty()) {
+                            System.out.println("Nenhum item adicionado à compra. Operação cancelada.");
+                            return;
+                        }
+                        System.out.println("Total da Compra (R$ " + compra.getTotal() + ")");
+                        System.out.println("Pagamento (1=Boleto, 2=Cartão): ");
+                        int tipoPagamento = new Scanner(System.in).nextInt();
+                        switch (tipoPagamento) {
+                            case 1 -> {
+                                System.out.println("Compra realizada com Boleto.");
+                            }
+                            case 2 -> {
+                                System.out.println("Informe o número do cartão: ");
+                                String numeroCartao = new Scanner(System.in).nextLine();
+                                System.out.println("Informe o nome impresso no cartão: ");
+                                String nomeImpresso = new Scanner(System.in).nextLine();
+                                compra.setPagamento(new PagamentoCartao(compra.getTotal(), numeroCartao, nomeImpresso));
+                            }
+                        }
+                        compraDao.salvar(compra);
+                        System.out.println("Compra realizada com sucesso!");
                     }
-                    case 6 -> System.out.println("Listar Compras de um Cliente");
+                    case 6 -> {
+                        System.out.println("Digite o id do cliente: ");
+                        String idCliente = new Scanner(System.in).nextLine();
+                        Cliente cliente = clienteDao.buscarPorId(idCliente);
+                        if (cliente == null) {
+                            System.out.println("Cliente não encontrado!");
+                            return;
+                        }
+                        compraDao.buscarTodosPeloIdCliente(idCliente).forEach(c -> {
+                            System.out.println("ID: " + c.getId() + " Data: " + c.getData() + " Total: " + c.getTotal());
+                            System.out.println("-----------------------");
+                        });
+                    }
                     case 0 -> System.out.println("Saindo...");
                     default -> System.out.println("Opção inválida!");
                 }
