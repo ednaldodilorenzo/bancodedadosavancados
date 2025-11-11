@@ -12,6 +12,7 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -69,8 +70,23 @@ public class Main {
                             System.out.println("-----------------------");
                         });
                     }
-                    case 3 -> System.out.println("Cadastrar Produto");
-                    case 4 -> System.out.println("Listar Produtos");
+                    case 3 -> {
+                        System.out.println("Cadastrar Produto");
+                        System.out.println("Informe o nome do produto: ");
+                        String nomeProduto = new Scanner(System.in).nextLine();
+                        System.out.println("Informe o valor do produto: ");
+                        BigDecimal valorProduto = new Scanner(System.in).nextBigDecimal();
+                        Produto produto = new Produto(nomeProduto, valorProduto);
+                        produtoDao.salvar(produto);
+                        System.out.println("Produto cadastrado com sucesso!");
+                    }
+                    case 4 -> {
+                        System.out.println("Listar Produtos");
+                        produtoDao.buscarTodos().forEach(produto -> {
+                            System.out.println("ID: " + produto.getId() + " Nome: " + produto.getDescricao() + " Valor: " + produto.getValor());
+                            System.out.println("-----------------------");
+                        });
+                    }
                     case 5 -> {
                         System.out.println("Digite o CPF do cliente: ");
                         String cpfCliente = new Scanner(System.in).nextLine();
