@@ -22,6 +22,6 @@ public class CompraDao {
     }
 
     public List<Compra> buscarTodosPeloIdCliente(String idCliente) {
-        return this.col.find(eq("cliente.$id", new ObjectId(idCliente))).into(new ArrayList<>());
+        return this.col.find(eq("cliente._id", new ObjectId(idCliente))).into(new ArrayList<>());
     }
 }
