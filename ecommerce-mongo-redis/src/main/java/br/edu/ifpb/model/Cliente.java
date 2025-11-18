@@ -1,7 +1,9 @@
 package br.edu.ifpb.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.bson.types.ObjectId;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Cliente {
     private ObjectId id;
     private String nome;

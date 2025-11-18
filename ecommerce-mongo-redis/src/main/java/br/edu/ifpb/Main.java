@@ -4,6 +4,7 @@ import br.edu.ifpb.dao.ClienteDao;
 import br.edu.ifpb.dao.CompraDao;
 import br.edu.ifpb.dao.ProdutoDao;
 import br.edu.ifpb.model.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -11,8 +12,10 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import redis.clients.jedis.Jedis;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Scanner;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -65,10 +68,30 @@ public class Main {
                         break;
                     }
                     case 2 -> {
-                        clienteDao.buscarTodos().forEach(cliente -> {
-                            System.out.println("ID: " + cliente.getId() + " Nome: " + cliente.getNome() + " CPF: " + cliente.getCpf());
-                            System.out.println("-----------------------");
-                        });
+                        try (Jedis jedis = new Jedis("localhost", 6379)) {
+                            try {
+                                ObjectMapper mapper = new ObjectMapper();
+                                String clientesCache = jedis.get("clientes:listar");
+                                List<Cliente> clientes;
+                                if (clientesCache == null) {
+                                    System.out.println("Buscando no banco de dados...");
+                                    clientes = clienteDao.buscarTodos();
+                                    String clientesSerializados = mapper.writeValueAsString(clientes);
+                                    jedis.setex("clientes:listar", 30, clientesSerializados);
+                                } else {
+                                    System.out.println("Buscando no cache...");
+                                    clientes = mapper.readValue(clientesCache,
+                                            mapper.getTypeFactory().constructCollectionType(List.class, Cliente.class));
+
+                                }
+                                clientes.forEach(cliente -> {
+                                    System.out.println("ID: " + cliente.getId() + " Nome: " + cliente.getNome() + " CPF: " + cliente.getCpf());
+                                    System.out.println("-----------------------");
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                     case 3 -> {
                         System.out.println("Cadastrar Produto");
