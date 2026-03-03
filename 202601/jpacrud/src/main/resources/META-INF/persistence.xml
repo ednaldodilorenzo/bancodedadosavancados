@@ -3,16 +3,19 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
                                  https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
-             version="3.1">
+             version="3.2">
 
     <persistence-unit name="jpa-app-pu" transaction-type="RESOURCE_LOCAL">
         <class>org.example.model.Usuario</class>
+
         <properties>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:jpaapp"/>
+            <!-- Conexão com H2 em memória -->
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:jpaapp;DB_CLOSE_DELAY=-1"/>
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value=""/>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
 
+            <!-- Configurações do Hibernate -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
