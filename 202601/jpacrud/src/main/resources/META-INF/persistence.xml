@@ -7,6 +7,9 @@
 
     <persistence-unit name="jpa-app-pu" transaction-type="RESOURCE_LOCAL">
         <class>org.example.model.Usuario</class>
+        <class>org.example.model.Cliente</class>
+        <class>org.example.model.Funcionario</class>
+        <class>org.example.model.Papel</class>
 
         <properties>
             <!-- Conexão com H2 em memória -->

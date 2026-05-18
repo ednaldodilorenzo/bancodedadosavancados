@@ -1,13 +1,20 @@
 package org.example;
 
 import jakarta.persistence.*;
+import org.example.dao.FuncionarioDao;
+import org.example.dao.PapelDao;
 import org.example.dao.UsuarioDao;
+import org.example.model.Funcionario;
 import org.example.model.Status;
 import org.example.model.Usuario;
+import org.example.model.Papel;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -18,6 +25,8 @@ public class Main {
     public static void main(String[] args) {
         try {
             UsuarioDao usuarioDao = new UsuarioDao(em);
+            FuncionarioDao funcionarioDao = new FuncionarioDao(em);
+            PapelDao papelDao = new PapelDao(em);
             while (true) {
                 System.out.print("""
                         Menu:
@@ -26,6 +35,8 @@ public class Main {
                            3) Buscar Usuário por ID
                            4) Atualizar Usuário
                            5) Excluir Usuário
+                           6) Criar Funcionário
+                           7) Listar Funcionários
                            0) Sair
                         opção: """);
                 BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
@@ -105,9 +116,42 @@ public class Main {
                         }
                         usuarioDao.excluir(id);
                     }
+                    case 6 -> {
+                        Funcionario usuario = new Funcionario();
+                        System.out.print("Digite o nome: ");
+                        String name = bf.readLine();
+                        usuario.setName(name);
+                        System.out.print("Digite o CPF: ");
+                        String cpf = bf.readLine();
+                        usuario.setCpf(cpf);
+                        System.out.print("Digite o username: ");
+                        String username = bf.readLine();
+                        usuario.setUsername(username);
+                        System.out.print("Digite o status: ");
+                        char status = bf.readLine().toLowerCase().charAt(0);
+                        usuario.setStatus(status == 'a' ? Status.ATIVO
+                                : Status.INATIVO);
+                        System.out.print("Digite a matrícula: ");
+                        String matricula = bf.readLine();
+                        usuario.setMatricula(matricula);
+                        System.out.print("Digite o papel: ");
+                        String nomePapel = bf.readLine();
+                        Papel papel = new Papel();
+                        papel.setNome(nomePapel);
+                        papel = papelDao.salvar(papel);
+                        Set<org.example.model.Papel> papeis = new HashSet<>();
+                        papeis.add(papel);
+                        usuario.setPapeis(papeis);
+                        funcionarioDao.salvar(usuario);
+                    }
+                    case 7 -> {
+                        List<Funcionario> usuarios = funcionarioDao.getFuncionarios();
+                        usuarios.forEach(usuario -> System.out.println("Id: " + usuario.getId() + "\nNome: " + usuario.getName() + "\nPapeis: " +  usuario.getPapeis()));
+                    }
                     case 0 -> System.exit(0);
                     default -> System.out.println("Opção inválida");
                 }
+
             }
         } catch (IOException ioex) {
             ioex.printStackTrace();
