@@ -21,20 +21,25 @@ public class MongoProdutoDao implements ProdutoDao {
 
     @Override
     public void salvar(Produto produto) {
-        Document document = new Document("nome", produto.getNome()).append("categoria", produto.getCategoria()).append("preco", produto.getPreco());
+        Document document = new Document("nome", produto.getNome())
+                .append("categoria", produto.getCategoria())
+                .append("preco", produto.getPreco());
         produtoCollection.insertOne(document);
     }
 
     @Override
     public Produto buscarPorId(String id) {
         // Note: You should also add a filter for the ID, otherwise it always returns the first document
-        var document = this.produtoCollection.find(Filters.eq("_id", new ObjectId(id))).first();
+        var document = this.produtoCollection
+                .find(Filters.eq("_id", new ObjectId(id)))
+                .first();
 
         return (document != null) ? new Produto(
                 document.getObjectId("_id").toString(),
                 document.getString("nome"),
                 document.getString("categoria"),
-                document.get("preco", org.bson.types.Decimal128.class).bigDecimalValue()) : null;
+                document.get("preco", org.bson.types.Decimal128.class)
+                        .bigDecimalValue()) : null;
     }
 
 }
